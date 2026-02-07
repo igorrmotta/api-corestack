@@ -2,10 +2,12 @@ package repository
 
 import (
 	"context"
+	"errors"
 	"fmt"
 
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
@@ -26,6 +28,10 @@ func (r *WorkspaceRepo) Create(ctx context.Context, params CreateWorkspaceParams
 		params.Name, params.Slug,
 	).Scan(&w.ID, &w.Name, &w.Slug, &w.CreatedAt, &w.UpdatedAt, &w.DeletedAt)
 	if err != nil {
+		var pgErr *pgconn.PgError
+		if errors.As(err, &pgErr) && pgErr.Code == "23505" {
+			return nil, fmt.Errorf("create workspace: %w", ErrConflict)
+		}
 		return nil, fmt.Errorf("create workspace: %w", err)
 	}
 	return &w, nil
@@ -117,6 +123,10 @@ func (r *WorkspaceRepo) Update(ctx context.Context, params UpdateWorkspaceParams
 	if err != nil {
 		if err == pgx.ErrNoRows {
 			return nil, ErrNotFound
+		}
+		var pgErr *pgconn.PgError
+		if errors.As(err, &pgErr) && pgErr.Code == "23505" {
+			return nil, fmt.Errorf("update workspace: %w", ErrConflict)
 		}
 		return nil, fmt.Errorf("update workspace: %w", err)
 	}

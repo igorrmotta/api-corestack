@@ -17,12 +17,18 @@ headers {
 body:json {
   {
     "name": "Test Workspace",
-    "slug": "test-workspace"
+    "slug": "{{testSlug}}"
   }
+}
+
+script:pre-request {
+  const slug = "test-ws-" + Date.now();
+  bru.setVar("testSlug", slug);
 }
 
 vars:post-response {
   workspaceId: res.body.workspace.id
+  testSlug: res.body.workspace.slug
 }
 
 tests {
@@ -33,6 +39,6 @@ tests {
   test("should return workspace", function() {
     expect(res.body.workspace).to.have.property("id");
     expect(res.body.workspace.name).to.equal("Test Workspace");
-    expect(res.body.workspace.slug).to.equal("test-workspace");
+    expect(res.body.workspace.slug).to.equal(bru.getVar("testSlug"));
   });
 }

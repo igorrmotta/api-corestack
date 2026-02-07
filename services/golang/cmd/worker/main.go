@@ -10,6 +10,7 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/riverqueue/river"
 	"github.com/riverqueue/river/riverdriver/riverpgxv5"
+	"github.com/riverqueue/river/rivermigrate"
 
 	"github.com/igorrmotta/api-corestack/services/golang/internal/config"
 	"github.com/igorrmotta/api-corestack/services/golang/internal/repository"
@@ -52,6 +53,21 @@ func main() {
 		os.Exit(1)
 	}
 	slog.Info("worker connected to database")
+
+	// Run River migrations
+	migrator, err := rivermigrate.New(riverpgxv5.New(pool), nil)
+	if err != nil {
+		slog.Error("failed to create river migrator", "error", err)
+		os.Exit(1)
+	}
+	res, err := migrator.Migrate(ctx, rivermigrate.DirectionUp, nil)
+	if err != nil {
+		slog.Error("failed to run river migrations", "error", err)
+		os.Exit(1)
+	}
+	for _, v := range res.Versions {
+		slog.Info("applied river migration", "version", v.Version)
+	}
 
 	// Initialize repositories
 	taskRepo := repository.NewTaskRepo(pool)

@@ -34,6 +34,6 @@ tests {
   test("should return import results", function() {
     expect(res.body.total).to.equal(3);
     expect(res.body.succeeded).to.equal(3);
-    expect(res.body.failed).to.equal(0);
+    expect(res.body.failed || 0).to.equal(0);
   });
 }

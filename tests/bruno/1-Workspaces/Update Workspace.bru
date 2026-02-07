@@ -18,8 +18,13 @@ body:json {
   {
     "id": "{{workspaceId}}",
     "name": "Updated Workspace",
-    "slug": "updated-workspace"
+    "slug": "{{updatedSlug}}"
   }
+}
+
+script:pre-request {
+  const slug = "updated-ws-" + Date.now();
+  bru.setVar("updatedSlug", slug);
 }
 
 tests {
@@ -29,6 +34,6 @@ tests {
 
   test("should return updated workspace", function() {
     expect(res.body.workspace.name).to.equal("Updated Workspace");
-    expect(res.body.workspace.slug).to.equal("updated-workspace");
+    expect(res.body.workspace.slug).to.equal(bru.getVar("updatedSlug"));
   });
 }
