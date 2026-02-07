@@ -1,0 +1,31 @@
+meta {
+  name: Get Task
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{SERVICE_URL}}/task.v1.TaskService/GetTask
+  body: json
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "id": "{{taskId}}"
+  }
+}
+
+tests {
+  test("should return 200", function() {
+    expect(res.status).to.equal(200);
+  });
+
+  test("should return task by id", function() {
+    expect(res.body.task.id).to.equal(bru.getVar("taskId"));
+  });
+}

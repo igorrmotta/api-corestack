@@ -1,0 +1,39 @@
+meta {
+  name: Bulk Import Tasks
+  type: http
+  seq: 6
+}
+
+post {
+  url: {{SERVICE_URL}}/task.v1.TaskService/BulkImportTasks
+  body: json
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "workspaceId": "{{workspaceId}}",
+    "projectId": "{{projectId}}",
+    "tasks": [
+      {"title": "Import Task 1", "priority": "low"},
+      {"title": "Import Task 2", "priority": "medium"},
+      {"title": "Import Task 3", "priority": "high"}
+    ]
+  }
+}
+
+tests {
+  test("should return 200", function() {
+    expect(res.status).to.equal(200);
+  });
+
+  test("should return import results", function() {
+    expect(res.body.total).to.equal(3);
+    expect(res.body.succeeded).to.equal(3);
+    expect(res.body.failed).to.equal(0);
+  });
+}

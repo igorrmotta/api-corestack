@@ -1,0 +1,32 @@
+meta {
+  name: Get Workspace
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{SERVICE_URL}}/workspace.v1.WorkspaceService/GetWorkspace
+  body: json
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "id": "{{workspaceId}}"
+  }
+}
+
+tests {
+  test("should return 200", function() {
+    expect(res.status).to.equal(200);
+  });
+
+  test("should return workspace by id", function() {
+    expect(res.body.workspace.id).to.equal(bru.getVar("workspaceId"));
+    expect(res.body.workspace.name).to.equal("Test Workspace");
+  });
+}

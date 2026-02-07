@@ -1,0 +1,27 @@
+meta {
+  name: Mark Notification Read
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{SERVICE_URL}}/notification.v1.NotificationService/MarkNotificationRead
+  body: json
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "id": 1
+  }
+}
+
+tests {
+  test("should return 200", function() {
+    expect(res.status).to.equal(200);
+  });
+}

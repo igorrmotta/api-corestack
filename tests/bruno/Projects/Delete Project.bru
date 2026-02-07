@@ -1,0 +1,27 @@
+meta {
+  name: Delete Project
+  type: http
+  seq: 5
+}
+
+post {
+  url: {{SERVICE_URL}}/project.v1.ProjectService/DeleteProject
+  body: json
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "id": "{{projectId}}"
+  }
+}
+
+tests {
+  test("should return 200", function() {
+    expect(res.status).to.equal(200);
+  });
+}

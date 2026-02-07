@@ -1,0 +1,34 @@
+meta {
+  name: List Comments
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{SERVICE_URL}}/comment.v1.CommentService/ListComments
+  body: json
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "taskId": "{{taskId}}",
+    "pagination": {
+      "pageSize": 10
+    }
+  }
+}
+
+tests {
+  test("should return 200", function() {
+    expect(res.status).to.equal(200);
+  });
+
+  test("should return comments list", function() {
+    expect(res.body.comments).to.be.an("array");
+  });
+}

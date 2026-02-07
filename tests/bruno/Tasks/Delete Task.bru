@@ -1,0 +1,27 @@
+meta {
+  name: Delete Task
+  type: http
+  seq: 7
+}
+
+post {
+  url: {{SERVICE_URL}}/task.v1.TaskService/DeleteTask
+  body: json
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "id": "{{taskId}}"
+  }
+}
+
+tests {
+  test("should return 200", function() {
+    expect(res.status).to.equal(200);
+  });
+}

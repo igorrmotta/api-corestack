@@ -1,0 +1,38 @@
+meta {
+  name: Create Project
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{SERVICE_URL}}/project.v1.ProjectService/CreateProject
+  body: json
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "workspaceId": "{{workspaceId}}",
+    "name": "Test Project",
+    "description": "A test project for API validation"
+  }
+}
+
+vars:post-response {
+  projectId: res.body.project.id
+}
+
+tests {
+  test("should return 200", function() {
+    expect(res.status).to.equal(200);
+  });
+
+  test("should return project", function() {
+    expect(res.body.project).to.have.property("id");
+    expect(res.body.project.name).to.equal("Test Project");
+  });
+}

@@ -1,0 +1,53 @@
+# Go
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+*.test
+*.out
+/services/golang/server
+/services/golang/worker
+/services/golang/tmp/
+
+# Generated protobuf code
+/services/golang/gen/
+
+# Environment
+.env
+.env.local
+.env.*.local
+!.env.example
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# PostgreSQL data volumes
+postgres_data/
+
+# Node.js (future TS service)
+node_modules/
+dist/
+*.tsbuildinfo
+
+# Python (future Python service)
+__pycache__/
+*.py[cod]
+*$py.class
+.venv/
+venv/
+*.egg-info/
+
+# Rust (future Rust service)
+target/
+
+# sqlc
+/services/golang/internal/db/*.sql.go

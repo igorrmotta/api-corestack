@@ -1,0 +1,47 @@
+syntax = "proto3";
+package comment.v1;
+option go_package = "github.com/igorrmotta/api-corestack/services/golang/gen/comment/v1;commentv1";
+
+import "common/v1/pagination.proto";
+import "google/protobuf/timestamp.proto";
+
+message Comment {
+  string id = 1;
+  string task_id = 2;
+  string author_id = 3;
+  string content = 4;
+  google.protobuf.Timestamp created_at = 5;
+  google.protobuf.Timestamp updated_at = 6;
+}
+
+message CreateCommentRequest {
+  string task_id = 1;
+  string author_id = 2;
+  string content = 3;
+}
+
+message CreateCommentResponse {
+  Comment comment = 1;
+}
+
+message ListCommentsRequest {
+  string task_id = 1;
+  common.v1.PaginationRequest pagination = 2;
+}
+
+message ListCommentsResponse {
+  repeated Comment comments = 1;
+  common.v1.PaginationResponse pagination = 2;
+}
+
+message DeleteCommentRequest {
+  string id = 1;
+}
+
+message DeleteCommentResponse {}
+
+service CommentService {
+  rpc CreateComment(CreateCommentRequest) returns (CreateCommentResponse);
+  rpc ListComments(ListCommentsRequest) returns (ListCommentsResponse);
+  rpc DeleteComment(DeleteCommentRequest) returns (DeleteCommentResponse);
+}

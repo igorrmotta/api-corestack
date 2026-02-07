@@ -1,0 +1,34 @@
+meta {
+  name: List Workspaces
+  type: http
+  seq: 3
+}
+
+post {
+  url: {{SERVICE_URL}}/workspace.v1.WorkspaceService/ListWorkspaces
+  body: json
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "pagination": {
+      "pageSize": 10
+    }
+  }
+}
+
+tests {
+  test("should return 200", function() {
+    expect(res.status).to.equal(200);
+  });
+
+  test("should return workspaces list", function() {
+    expect(res.body.workspaces).to.be.an("array");
+    expect(res.body.workspaces.length).to.be.at.least(1);
+  });
+}

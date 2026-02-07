@@ -1,0 +1,34 @@
+meta {
+  name: List Notifications
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{SERVICE_URL}}/notification.v1.NotificationService/ListNotifications
+  body: json
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "workspaceId": "{{workspaceId}}",
+    "pagination": {
+      "pageSize": 10
+    }
+  }
+}
+
+tests {
+  test("should return 200", function() {
+    expect(res.status).to.equal(200);
+  });
+
+  test("should return notifications list", function() {
+    expect(res.body.notifications).to.be.an("array");
+  });
+}

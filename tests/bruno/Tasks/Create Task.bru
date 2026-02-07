@@ -1,0 +1,42 @@
+meta {
+  name: Create Task
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{SERVICE_URL}}/task.v1.TaskService/CreateTask
+  body: json
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "workspaceId": "{{workspaceId}}",
+    "projectId": "{{projectId}}",
+    "title": "Test Task",
+    "description": "A test task for API validation",
+    "priority": "high",
+    "assignedTo": "user-1"
+  }
+}
+
+vars:post-response {
+  taskId: res.body.task.id
+}
+
+tests {
+  test("should return 200", function() {
+    expect(res.status).to.equal(200);
+  });
+
+  test("should return task", function() {
+    expect(res.body.task).to.have.property("id");
+    expect(res.body.task.title).to.equal("Test Task");
+    expect(res.body.task.priority).to.equal("high");
+  });
+}

@@ -1,0 +1,38 @@
+meta {
+  name: Create Comment
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{SERVICE_URL}}/comment.v1.CommentService/CreateComment
+  body: json
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "taskId": "{{taskId}}",
+    "authorId": "user-1",
+    "content": "This is a test comment"
+  }
+}
+
+vars:post-response {
+  commentId: res.body.comment.id
+}
+
+tests {
+  test("should return 200", function() {
+    expect(res.status).to.equal(200);
+  });
+
+  test("should return comment", function() {
+    expect(res.body.comment).to.have.property("id");
+    expect(res.body.comment.content).to.equal("This is a test comment");
+  });
+}

@@ -1,0 +1,35 @@
+meta {
+  name: List Tasks
+  type: http
+  seq: 3
+}
+
+post {
+  url: {{SERVICE_URL}}/task.v1.TaskService/ListTasks
+  body: json
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "workspaceId": "{{workspaceId}}",
+    "projectId": "{{projectId}}",
+    "pagination": {
+      "pageSize": 10
+    }
+  }
+}
+
+tests {
+  test("should return 200", function() {
+    expect(res.status).to.equal(200);
+  });
+
+  test("should return tasks list", function() {
+    expect(res.body.tasks).to.be.an("array");
+  });
+}

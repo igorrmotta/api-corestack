@@ -1,0 +1,38 @@
+meta {
+  name: Create Workspace
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{SERVICE_URL}}/workspace.v1.WorkspaceService/CreateWorkspace
+  body: json
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "name": "Test Workspace",
+    "slug": "test-workspace"
+  }
+}
+
+vars:post-response {
+  workspaceId: res.body.workspace.id
+}
+
+tests {
+  test("should return 200", function() {
+    expect(res.status).to.equal(200);
+  });
+
+  test("should return workspace", function() {
+    expect(res.body.workspace).to.have.property("id");
+    expect(res.body.workspace.name).to.equal("Test Workspace");
+    expect(res.body.workspace.slug).to.equal("test-workspace");
+  });
+}

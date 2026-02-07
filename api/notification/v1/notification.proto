@@ -1,0 +1,42 @@
+syntax = "proto3";
+package notification.v1;
+option go_package = "github.com/igorrmotta/api-corestack/services/golang/gen/notification/v1;notificationv1";
+
+import "common/v1/pagination.proto";
+import "google/protobuf/timestamp.proto";
+import "google/protobuf/struct.proto";
+
+message Notification {
+  int64 id = 1;
+  string workspace_id = 2;
+  string event_type = 3;
+  google.protobuf.Struct payload = 4;
+  string status = 5;
+  int32 retry_count = 6;
+  google.protobuf.Timestamp created_at = 7;
+  google.protobuf.Timestamp processed_at = 8;
+}
+
+message ListNotificationsRequest {
+  string workspace_id = 1;
+  string status = 2;
+  common.v1.PaginationRequest pagination = 3;
+}
+
+message ListNotificationsResponse {
+  repeated Notification notifications = 1;
+  common.v1.PaginationResponse pagination = 2;
+}
+
+message MarkNotificationReadRequest {
+  int64 id = 1;
+}
+
+message MarkNotificationReadResponse {
+  Notification notification = 1;
+}
+
+service NotificationService {
+  rpc ListNotifications(ListNotificationsRequest) returns (ListNotificationsResponse);
+  rpc MarkNotificationRead(MarkNotificationReadRequest) returns (MarkNotificationReadResponse);
+}

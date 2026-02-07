@@ -1,0 +1,35 @@
+meta {
+  name: Update Task
+  type: http
+  seq: 5
+}
+
+post {
+  url: {{SERVICE_URL}}/task.v1.TaskService/UpdateTask
+  body: json
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "id": "{{taskId}}",
+    "title": "Updated Task",
+    "status": "in_progress",
+    "priority": "critical"
+  }
+}
+
+tests {
+  test("should return 200", function() {
+    expect(res.status).to.equal(200);
+  });
+
+  test("should return updated task", function() {
+    expect(res.body.task.title).to.equal("Updated Task");
+    expect(res.body.task.status).to.equal("in_progress");
+  });
+}

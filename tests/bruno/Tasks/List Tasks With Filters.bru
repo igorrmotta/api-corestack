@@ -1,0 +1,37 @@
+meta {
+  name: List Tasks With Filters
+  type: http
+  seq: 4
+}
+
+post {
+  url: {{SERVICE_URL}}/task.v1.TaskService/ListTasks
+  body: json
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "workspaceId": "{{workspaceId}}",
+    "status": "todo",
+    "priority": "high",
+    "assignedTo": "user-1",
+    "pagination": {
+      "pageSize": 10
+    }
+  }
+}
+
+tests {
+  test("should return 200", function() {
+    expect(res.status).to.equal(200);
+  });
+
+  test("should return filtered tasks", function() {
+    expect(res.body.tasks).to.be.an("array");
+  });
+}

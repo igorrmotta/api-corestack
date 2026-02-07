@@ -1,0 +1,34 @@
+meta {
+  name: List Projects
+  type: http
+  seq: 3
+}
+
+post {
+  url: {{SERVICE_URL}}/project.v1.ProjectService/ListProjects
+  body: json
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "workspaceId": "{{workspaceId}}",
+    "pagination": {
+      "pageSize": 10
+    }
+  }
+}
+
+tests {
+  test("should return 200", function() {
+    expect(res.status).to.equal(200);
+  });
+
+  test("should return projects list", function() {
+    expect(res.body.projects).to.be.an("array");
+  });
+}

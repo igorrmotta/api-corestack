@@ -1,0 +1,31 @@
+meta {
+  name: Get Project
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{SERVICE_URL}}/project.v1.ProjectService/GetProject
+  body: json
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "id": "{{projectId}}"
+  }
+}
+
+tests {
+  test("should return 200", function() {
+    expect(res.status).to.equal(200);
+  });
+
+  test("should return project by id", function() {
+    expect(res.body.project.id).to.equal(bru.getVar("projectId"));
+  });
+}

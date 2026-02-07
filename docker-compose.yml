@@ -1,0 +1,54 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: api_corestack
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports: ["5432:5432"]
+    volumes: [postgres_data:/var/lib/postgresql/data]
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  migrate:
+    image: amacneil/dbmate
+    depends_on:
+      postgres:
+        condition: service_healthy
+    volumes:
+      - ./db:/db
+    command: ["--url", "postgres://postgres:postgres@postgres:5432/api_corestack?sslmode=disable", "up"]
+
+  go-server:
+    build:
+      context: ./services/golang
+      dockerfile: Dockerfile
+    depends_on:
+      postgres:
+        condition: service_healthy
+    ports: ["8080:8080"]
+    environment:
+      DATABASE_URL: postgres://postgres:postgres@postgres:5432/api_corestack?sslmode=disable
+      GRPC_PORT: "8080"
+      LOG_LEVEL: info
+    profiles: [go]
+
+  go-worker:
+    build:
+      context: ./services/golang
+      dockerfile: Dockerfile
+    command: ["/app/worker"]
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgres://postgres:postgres@postgres:5432/api_corestack?sslmode=disable
+      LOG_LEVEL: info
+      RIVER_CONCURRENCY: "10"
+    profiles: [go]
+
+volumes:
+  postgres_data:

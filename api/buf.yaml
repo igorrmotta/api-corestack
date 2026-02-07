@@ -1,0 +1,14 @@
+version: v2
+modules:
+  - path: common/v1
+  - path: workspace/v1
+  - path: project/v1
+  - path: task/v1
+  - path: comment/v1
+  - path: notification/v1
+lint:
+  use:
+    - STANDARD
+breaking:
+  use:
+    - FILE

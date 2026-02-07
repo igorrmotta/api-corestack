@@ -1,0 +1,116 @@
+syntax = "proto3";
+package task.v1;
+option go_package = "github.com/igorrmotta/api-corestack/services/golang/gen/task/v1;taskv1";
+
+import "common/v1/pagination.proto";
+import "google/protobuf/timestamp.proto";
+import "google/protobuf/struct.proto";
+
+message Task {
+  string id = 1;
+  string workspace_id = 2;
+  string project_id = 3;
+  string title = 4;
+  string description = 5;
+  string status = 6;       // todo, in_progress, review, done
+  string priority = 7;     // low, medium, high, critical
+  string assigned_to = 8;
+  google.protobuf.Timestamp due_date = 9;
+  google.protobuf.Struct metadata = 10;
+  google.protobuf.Timestamp created_at = 11;
+  google.protobuf.Timestamp updated_at = 12;
+}
+
+message CreateTaskRequest {
+  string workspace_id = 1;
+  string project_id = 2;
+  string title = 3;
+  string description = 4;
+  string priority = 5;
+  string assigned_to = 6;
+  google.protobuf.Timestamp due_date = 7;
+  google.protobuf.Struct metadata = 8;
+}
+
+message CreateTaskResponse {
+  Task task = 1;
+}
+
+message GetTaskRequest {
+  string id = 1;
+}
+
+message GetTaskResponse {
+  Task task = 1;
+}
+
+message ListTasksRequest {
+  string workspace_id = 1;
+  string project_id = 2;
+  string status = 3;
+  string priority = 4;
+  string assigned_to = 5;
+  common.v1.PaginationRequest pagination = 6;
+}
+
+message ListTasksResponse {
+  repeated Task tasks = 1;
+  common.v1.PaginationResponse pagination = 2;
+}
+
+message UpdateTaskRequest {
+  string id = 1;
+  string title = 2;
+  string description = 3;
+  string status = 4;
+  string priority = 5;
+  string assigned_to = 6;
+  google.protobuf.Timestamp due_date = 7;
+  google.protobuf.Struct metadata = 8;
+}
+
+message UpdateTaskResponse {
+  Task task = 1;
+}
+
+message DeleteTaskRequest {
+  string id = 1;
+}
+
+message DeleteTaskResponse {}
+
+message TaskInput {
+  string title = 1;
+  string description = 2;
+  string priority = 3;
+  string assigned_to = 4;
+  google.protobuf.Timestamp due_date = 5;
+  google.protobuf.Struct metadata = 6;
+}
+
+message BulkImportTasksRequest {
+  string workspace_id = 1;
+  string project_id = 2;
+  repeated TaskInput tasks = 3;
+}
+
+message TaskError {
+  int32 index = 1;
+  string error = 2;
+}
+
+message BulkImportTasksResponse {
+  int32 total = 1;
+  int32 succeeded = 2;
+  int32 failed = 3;
+  repeated TaskError errors = 4;
+}
+
+service TaskService {
+  rpc CreateTask(CreateTaskRequest) returns (CreateTaskResponse);
+  rpc GetTask(GetTaskRequest) returns (GetTaskResponse);
+  rpc ListTasks(ListTasksRequest) returns (ListTasksResponse);
+  rpc UpdateTask(UpdateTaskRequest) returns (UpdateTaskResponse);
+  rpc DeleteTask(DeleteTaskRequest) returns (DeleteTaskResponse);
+  rpc BulkImportTasks(BulkImportTasksRequest) returns (BulkImportTasksResponse);
+}

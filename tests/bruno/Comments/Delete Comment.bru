@@ -1,0 +1,27 @@
+meta {
+  name: Delete Comment
+  type: http
+  seq: 3
+}
+
+post {
+  url: {{SERVICE_URL}}/comment.v1.CommentService/DeleteComment
+  body: json
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "id": "{{commentId}}"
+  }
+}
+
+tests {
+  test("should return 200", function() {
+    expect(res.status).to.equal(200);
+  });
+}

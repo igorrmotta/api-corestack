@@ -1,0 +1,27 @@
+meta {
+  name: Delete Workspace
+  type: http
+  seq: 5
+}
+
+post {
+  url: {{SERVICE_URL}}/workspace.v1.WorkspaceService/DeleteWorkspace
+  body: json
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "id": "{{workspaceId}}"
+  }
+}
+
+tests {
+  test("should return 200", function() {
+    expect(res.status).to.equal(200);
+  });
+}

@@ -1,0 +1,34 @@
+meta {
+  name: Update Workspace
+  type: http
+  seq: 4
+}
+
+post {
+  url: {{SERVICE_URL}}/workspace.v1.WorkspaceService/UpdateWorkspace
+  body: json
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "id": "{{workspaceId}}",
+    "name": "Updated Workspace",
+    "slug": "updated-workspace"
+  }
+}
+
+tests {
+  test("should return 200", function() {
+    expect(res.status).to.equal(200);
+  });
+
+  test("should return updated workspace", function() {
+    expect(res.body.workspace.name).to.equal("Updated Workspace");
+    expect(res.body.workspace.slug).to.equal("updated-workspace");
+  });
+}

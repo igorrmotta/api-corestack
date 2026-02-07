@@ -1,0 +1,34 @@
+meta {
+  name: Update Project
+  type: http
+  seq: 4
+}
+
+post {
+  url: {{SERVICE_URL}}/project.v1.ProjectService/UpdateProject
+  body: json
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "id": "{{projectId}}",
+    "name": "Updated Project",
+    "description": "Updated description",
+    "status": "active"
+  }
+}
+
+tests {
+  test("should return 200", function() {
+    expect(res.status).to.equal(200);
+  });
+
+  test("should return updated project", function() {
+    expect(res.body.project.name).to.equal("Updated Project");
+  });
+}
