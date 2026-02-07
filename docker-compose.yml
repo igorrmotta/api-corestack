@@ -18,9 +18,11 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
+    environment:
+      DATABASE_URL: postgres://postgres:postgres@postgres:5432/api_corestack?sslmode=disable
     volumes:
       - ./db:/db
-    command: ["--url", "postgres://postgres:postgres@postgres:5432/api_corestack?sslmode=disable", "up"]
+    command: ["up"]
 
   go-server:
     build:
