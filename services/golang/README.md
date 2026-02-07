@@ -39,10 +39,9 @@ services/golang/
 ├── gen/                       # Generated protobuf code (gitignored)
 ├── internal/
 │   ├── config/                # Environment-based configuration
-│   ├── domain/                # Entities, repository interfaces, domain errors
-│   ├── handler/               # Connect RPC handlers (proto ↔ domain translation)
+│   ├── handler/               # Connect RPC handlers (proto ↔ repository type translation)
 │   ├── service/               # Business logic
-│   ├── repository/            # pgx implementations + SQL queries
+│   ├── repository/            # pgx implementations, entities, errors, SQL queries
 │   │   └── queries/           # Raw SQL for sqlc
 │   ├── middleware/            # Logging + recovery interceptors
 │   └── worker/                # River job definitions

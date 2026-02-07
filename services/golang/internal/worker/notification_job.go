@@ -8,7 +8,7 @@ import (
 
 	"github.com/riverqueue/river"
 
-	"github.com/igorrmotta/api-corestack/services/golang/internal/domain"
+	"github.com/igorrmotta/api-corestack/services/golang/internal/repository"
 )
 
 // NotificationJobArgs represents the args for a notification processing job.
@@ -21,10 +21,10 @@ func (NotificationJobArgs) Kind() string { return "notification_process" }
 // NotificationWorker processes notification queue entries.
 type NotificationWorker struct {
 	river.WorkerDefaults[NotificationJobArgs]
-	notifRepo domain.NotificationRepository
+	notifRepo *repository.NotificationRepo
 }
 
-func NewNotificationWorker(notifRepo domain.NotificationRepository) *NotificationWorker {
+func NewNotificationWorker(notifRepo *repository.NotificationRepo) *NotificationWorker {
 	return &NotificationWorker{notifRepo: notifRepo}
 }
 
@@ -55,10 +55,10 @@ func (NotificationBatchJobArgs) Kind() string { return "notification_batch" }
 // NotificationBatchWorker fetches and processes pending notifications.
 type NotificationBatchWorker struct {
 	river.WorkerDefaults[NotificationBatchJobArgs]
-	notifRepo domain.NotificationRepository
+	notifRepo *repository.NotificationRepo
 }
 
-func NewNotificationBatchWorker(notifRepo domain.NotificationRepository) *NotificationBatchWorker {
+func NewNotificationBatchWorker(notifRepo *repository.NotificationRepo) *NotificationBatchWorker {
 	return &NotificationBatchWorker{notifRepo: notifRepo}
 }
 

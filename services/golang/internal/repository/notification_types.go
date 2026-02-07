@@ -1,7 +1,6 @@
-package domain
+package repository
 
 import (
-	"context"
 	"encoding/json"
 	"time"
 
@@ -39,14 +38,4 @@ type NotificationList struct {
 	Notifications []Notification
 	NextPageToken string
 	TotalCount    int32
-}
-
-type NotificationRepository interface {
-	Create(ctx context.Context, params CreateNotificationParams) (*Notification, error)
-	List(ctx context.Context, params ListNotificationsParams) (*NotificationList, error)
-	MarkProcessed(ctx context.Context, id int64) (*Notification, error)
-	// FetchPending retrieves pending/failed notifications for processing (FOR UPDATE SKIP LOCKED)
-	FetchPending(ctx context.Context, limit int) ([]Notification, error)
-	// MarkFailed marks a notification as failed with error message and updates retry info
-	MarkFailed(ctx context.Context, id int64, errMsg string) error
 }

@@ -12,15 +12,15 @@ import (
 	commonv1 "github.com/igorrmotta/api-corestack/services/golang/gen/common/v1"
 	notificationv1 "github.com/igorrmotta/api-corestack/services/golang/gen/notification/v1"
 	"github.com/igorrmotta/api-corestack/services/golang/gen/notification/v1/notificationv1connect"
-	"github.com/igorrmotta/api-corestack/services/golang/internal/domain"
+	"github.com/igorrmotta/api-corestack/services/golang/internal/repository"
 )
 
 type NotificationHandler struct {
 	notificationv1connect.UnimplementedNotificationServiceHandler
-	repo domain.NotificationRepository
+	repo *repository.NotificationRepo
 }
 
-func NewNotificationHandler(repo domain.NotificationRepository) *NotificationHandler {
+func NewNotificationHandler(repo *repository.NotificationRepo) *NotificationHandler {
 	return &NotificationHandler{repo: repo}
 }
 
@@ -29,7 +29,7 @@ func (h *NotificationHandler) ListNotifications(ctx context.Context, req *connec
 	if err != nil {
 		return nil, connect.NewError(connect.CodeInvalidArgument, err)
 	}
-	var params domain.ListNotificationsParams
+	var params repository.ListNotificationsParams
 	params.WorkspaceID = workspaceID
 	params.Status = req.Msg.Status
 	if req.Msg.Pagination != nil {
@@ -71,7 +71,7 @@ func (h *NotificationHandler) MarkNotificationRead(ctx context.Context, req *con
 	}), nil
 }
 
-func notificationToProto(n *domain.Notification) (*notificationv1.Notification, error) {
+func notificationToProto(n *repository.Notification) (*notificationv1.Notification, error) {
 	proto := &notificationv1.Notification{
 		Id:          n.ID,
 		WorkspaceId: n.WorkspaceID.String(),

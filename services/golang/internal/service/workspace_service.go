@@ -7,39 +7,39 @@ import (
 
 	"github.com/google/uuid"
 
-	"github.com/igorrmotta/api-corestack/services/golang/internal/domain"
+	"github.com/igorrmotta/api-corestack/services/golang/internal/repository"
 )
 
 type WorkspaceService struct {
-	repo domain.WorkspaceRepository
+	repo *repository.WorkspaceRepo
 }
 
-func NewWorkspaceService(repo domain.WorkspaceRepository) *WorkspaceService {
+func NewWorkspaceService(repo *repository.WorkspaceRepo) *WorkspaceService {
 	return &WorkspaceService{repo: repo}
 }
 
-func (s *WorkspaceService) Create(ctx context.Context, params domain.CreateWorkspaceParams) (*domain.Workspace, error) {
+func (s *WorkspaceService) Create(ctx context.Context, params repository.CreateWorkspaceParams) (*repository.Workspace, error) {
 	if params.Name == "" {
-		return nil, fmt.Errorf("%w: name is required", domain.ErrInvalidInput)
+		return nil, fmt.Errorf("%w: name is required", repository.ErrInvalidInput)
 	}
 	if params.Slug == "" {
-		return nil, fmt.Errorf("%w: slug is required", domain.ErrInvalidInput)
+		return nil, fmt.Errorf("%w: slug is required", repository.ErrInvalidInput)
 	}
 	slog.DebugContext(ctx, "creating workspace", "name", params.Name, "slug", params.Slug)
 	return s.repo.Create(ctx, params)
 }
 
-func (s *WorkspaceService) GetByID(ctx context.Context, id uuid.UUID) (*domain.Workspace, error) {
+func (s *WorkspaceService) GetByID(ctx context.Context, id uuid.UUID) (*repository.Workspace, error) {
 	return s.repo.GetByID(ctx, id)
 }
 
-func (s *WorkspaceService) List(ctx context.Context, params domain.ListWorkspacesParams) (*domain.WorkspaceList, error) {
+func (s *WorkspaceService) List(ctx context.Context, params repository.ListWorkspacesParams) (*repository.WorkspaceList, error) {
 	return s.repo.List(ctx, params)
 }
 
-func (s *WorkspaceService) Update(ctx context.Context, params domain.UpdateWorkspaceParams) (*domain.Workspace, error) {
+func (s *WorkspaceService) Update(ctx context.Context, params repository.UpdateWorkspaceParams) (*repository.Workspace, error) {
 	if params.Name == "" {
-		return nil, fmt.Errorf("%w: name is required", domain.ErrInvalidInput)
+		return nil, fmt.Errorf("%w: name is required", repository.ErrInvalidInput)
 	}
 	return s.repo.Update(ctx, params)
 }

@@ -10,10 +10,9 @@ db/migrations/                # dbmate SQL migrations (6 tables)
 services/golang/              # Go reference implementation
   cmd/server/main.go          #   HTTP server (Connect RPC, h2c, single port)
   cmd/worker/main.go          #   River background worker
-  internal/domain/            #   Entities + repository interfaces + errors
   internal/handler/           #   Connect RPC handlers
   internal/service/           #   Business logic
-  internal/repository/        #   pgx implementations
+  internal/repository/        #   pgx implementations, entities, errors
   internal/middleware/        #   Logging + recovery interceptors
   internal/worker/            #   River job definitions
   gen/                        #   Generated protobuf code (gitignored)
@@ -49,9 +48,9 @@ make test-bruno         # Run Bruno API tests against running server
 
 ## Architecture Rules
 
-- **Layers: handler → service → repository.** Never skip layers. Handlers translate between proto and domain types. Services contain business logic. Repositories do SQL.
-- **Domain is the center.** Entities and repository interfaces live in `internal/domain/`. No imports from handler/service/repository in domain.
-- **Error mapping.** Domain errors (`ErrNotFound`, `ErrAlreadyExists`, `ErrInvalidInput`, `ErrConflict`) are mapped to Connect RPC codes (`NotFound`, `AlreadyExists`, `InvalidArgument`, `Aborted`) in handlers.
+- **Layers: handler → service → repository.** Never skip layers. Handlers translate between proto and repository types. Services contain business logic. Repositories do SQL and own the entity types.
+- **Repository is the type owner.** Entities, param structs, and error constants live in `internal/repository/`. Services and handlers import repository types directly — no interface indirection.
+- **Error mapping.** Repository errors (`ErrNotFound`, `ErrAlreadyExists`, `ErrInvalidInput`, `ErrConflict`) are mapped to Connect RPC codes (`NotFound`, `AlreadyExists`, `InvalidArgument`, `Aborted`) in handlers.
 - **Single port.** Connect RPC serves gRPC and REST JSON on port 8080 via h2c. No separate HTTP gateway.
 - **Soft deletes.** Workspaces, projects, and tasks use `deleted_at` column. Queries must filter `WHERE deleted_at IS NULL`.
 - **Cursor-based pagination.** `page_token` is the UUID of the last item. Repos query `WHERE id > page_token ORDER BY id LIMIT page_size+1`.
@@ -67,7 +66,7 @@ make test-bruno         # Run Bruno API tests against running server
 
 1. Define the RPC in the appropriate `.proto` file under `api/`
 2. Run `make proto-gen` to regenerate Go code
-3. Add domain types to `internal/domain/` if needed
+3. Add entity/param types to `internal/repository/*_types.go` if needed
 4. Add repository method + SQL query in `internal/repository/`
 5. Add service method in `internal/service/`
 6. Implement the handler in `internal/handler/`

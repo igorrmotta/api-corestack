@@ -11,7 +11,7 @@ import (
 	commonv1 "github.com/igorrmotta/api-corestack/services/golang/gen/common/v1"
 	workspacev1 "github.com/igorrmotta/api-corestack/services/golang/gen/workspace/v1"
 	"github.com/igorrmotta/api-corestack/services/golang/gen/workspace/v1/workspacev1connect"
-	"github.com/igorrmotta/api-corestack/services/golang/internal/domain"
+	"github.com/igorrmotta/api-corestack/services/golang/internal/repository"
 	"github.com/igorrmotta/api-corestack/services/golang/internal/service"
 )
 
@@ -25,7 +25,7 @@ func NewWorkspaceHandler(svc *service.WorkspaceService) *WorkspaceHandler {
 }
 
 func (h *WorkspaceHandler) CreateWorkspace(ctx context.Context, req *connect.Request[workspacev1.CreateWorkspaceRequest]) (*connect.Response[workspacev1.CreateWorkspaceResponse], error) {
-	w, err := h.svc.Create(ctx, domain.CreateWorkspaceParams{
+	w, err := h.svc.Create(ctx, repository.CreateWorkspaceParams{
 		Name: req.Msg.Name,
 		Slug: req.Msg.Slug,
 	})
@@ -52,7 +52,7 @@ func (h *WorkspaceHandler) GetWorkspace(ctx context.Context, req *connect.Reques
 }
 
 func (h *WorkspaceHandler) ListWorkspaces(ctx context.Context, req *connect.Request[workspacev1.ListWorkspacesRequest]) (*connect.Response[workspacev1.ListWorkspacesResponse], error) {
-	var params domain.ListWorkspacesParams
+	var params repository.ListWorkspacesParams
 	if req.Msg.Pagination != nil {
 		params.PageSize = req.Msg.Pagination.PageSize
 		params.PageToken = req.Msg.Pagination.PageToken
@@ -79,7 +79,7 @@ func (h *WorkspaceHandler) UpdateWorkspace(ctx context.Context, req *connect.Req
 	if err != nil {
 		return nil, connect.NewError(connect.CodeInvalidArgument, err)
 	}
-	w, err := h.svc.Update(ctx, domain.UpdateWorkspaceParams{
+	w, err := h.svc.Update(ctx, repository.UpdateWorkspaceParams{
 		ID:   id,
 		Name: req.Msg.Name,
 		Slug: req.Msg.Slug,
@@ -103,7 +103,7 @@ func (h *WorkspaceHandler) DeleteWorkspace(ctx context.Context, req *connect.Req
 	return connect.NewResponse(&workspacev1.DeleteWorkspaceResponse{}), nil
 }
 
-func workspaceToProto(w *domain.Workspace) *workspacev1.Workspace {
+func workspaceToProto(w *repository.Workspace) *workspacev1.Workspace {
 	return &workspacev1.Workspace{
 		Id:        w.ID.String(),
 		Name:      w.Name,
@@ -113,15 +113,15 @@ func workspaceToProto(w *domain.Workspace) *workspacev1.Workspace {
 	}
 }
 
-// toConnectError maps domain errors to Connect RPC error codes.
+// toConnectError maps repository errors to Connect RPC error codes.
 func toConnectError(err error) error {
-	if errors.Is(err, domain.ErrNotFound) {
+	if errors.Is(err, repository.ErrNotFound) {
 		return connect.NewError(connect.CodeNotFound, err)
 	}
-	if errors.Is(err, domain.ErrInvalidInput) {
+	if errors.Is(err, repository.ErrInvalidInput) {
 		return connect.NewError(connect.CodeInvalidArgument, err)
 	}
-	if errors.Is(err, domain.ErrConflict) {
+	if errors.Is(err, repository.ErrConflict) {
 		return connect.NewError(connect.CodeAlreadyExists, err)
 	}
 	return connect.NewError(connect.CodeInternal, err)

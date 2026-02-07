@@ -10,7 +10,7 @@ import (
 	commonv1 "github.com/igorrmotta/api-corestack/services/golang/gen/common/v1"
 	commentv1 "github.com/igorrmotta/api-corestack/services/golang/gen/comment/v1"
 	"github.com/igorrmotta/api-corestack/services/golang/gen/comment/v1/commentv1connect"
-	"github.com/igorrmotta/api-corestack/services/golang/internal/domain"
+	"github.com/igorrmotta/api-corestack/services/golang/internal/repository"
 	"github.com/igorrmotta/api-corestack/services/golang/internal/service"
 )
 
@@ -28,7 +28,7 @@ func (h *CommentHandler) CreateComment(ctx context.Context, req *connect.Request
 	if err != nil {
 		return nil, connect.NewError(connect.CodeInvalidArgument, err)
 	}
-	c, err := h.svc.Create(ctx, domain.CreateCommentParams{
+	c, err := h.svc.Create(ctx, repository.CreateCommentParams{
 		TaskID:   taskID,
 		AuthorID: req.Msg.AuthorId,
 		Content:  req.Msg.Content,
@@ -46,7 +46,7 @@ func (h *CommentHandler) ListComments(ctx context.Context, req *connect.Request[
 	if err != nil {
 		return nil, connect.NewError(connect.CodeInvalidArgument, err)
 	}
-	var params domain.ListCommentsParams
+	var params repository.ListCommentsParams
 	params.TaskID = taskID
 	if req.Msg.Pagination != nil {
 		params.PageSize = req.Msg.Pagination.PageSize
@@ -80,7 +80,7 @@ func (h *CommentHandler) DeleteComment(ctx context.Context, req *connect.Request
 	return connect.NewResponse(&commentv1.DeleteCommentResponse{}), nil
 }
 
-func commentToProto(c *domain.Comment) *commentv1.Comment {
+func commentToProto(c *repository.Comment) *commentv1.Comment {
 	return &commentv1.Comment{
 		Id:        c.ID.String(),
 		TaskId:    c.TaskID.String(),

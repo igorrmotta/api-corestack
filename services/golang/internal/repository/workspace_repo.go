@@ -7,8 +7,6 @@ import (
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
-
-	"github.com/igorrmotta/api-corestack/services/golang/internal/domain"
 )
 
 type WorkspaceRepo struct {
@@ -19,8 +17,8 @@ func NewWorkspaceRepo(pool *pgxpool.Pool) *WorkspaceRepo {
 	return &WorkspaceRepo{pool: pool}
 }
 
-func (r *WorkspaceRepo) Create(ctx context.Context, params domain.CreateWorkspaceParams) (*domain.Workspace, error) {
-	var w domain.Workspace
+func (r *WorkspaceRepo) Create(ctx context.Context, params CreateWorkspaceParams) (*Workspace, error) {
+	var w Workspace
 	err := r.pool.QueryRow(ctx,
 		`INSERT INTO workspaces (id, name, slug, created_at, updated_at)
 		 VALUES (gen_random_uuid(), $1, $2, NOW(), NOW())
@@ -33,8 +31,8 @@ func (r *WorkspaceRepo) Create(ctx context.Context, params domain.CreateWorkspac
 	return &w, nil
 }
 
-func (r *WorkspaceRepo) GetByID(ctx context.Context, id uuid.UUID) (*domain.Workspace, error) {
-	var w domain.Workspace
+func (r *WorkspaceRepo) GetByID(ctx context.Context, id uuid.UUID) (*Workspace, error) {
+	var w Workspace
 	err := r.pool.QueryRow(ctx,
 		`SELECT id, name, slug, created_at, updated_at, deleted_at
 		 FROM workspaces WHERE id = $1 AND deleted_at IS NULL`,
@@ -42,14 +40,14 @@ func (r *WorkspaceRepo) GetByID(ctx context.Context, id uuid.UUID) (*domain.Work
 	).Scan(&w.ID, &w.Name, &w.Slug, &w.CreatedAt, &w.UpdatedAt, &w.DeletedAt)
 	if err != nil {
 		if err == pgx.ErrNoRows {
-			return nil, domain.ErrNotFound
+			return nil, ErrNotFound
 		}
 		return nil, fmt.Errorf("get workspace: %w", err)
 	}
 	return &w, nil
 }
 
-func (r *WorkspaceRepo) List(ctx context.Context, params domain.ListWorkspacesParams) (*domain.WorkspaceList, error) {
+func (r *WorkspaceRepo) List(ctx context.Context, params ListWorkspacesParams) (*WorkspaceList, error) {
 	pageSize := params.PageSize
 	if pageSize <= 0 || pageSize > 100 {
 		pageSize = 20
@@ -86,9 +84,9 @@ func (r *WorkspaceRepo) List(ctx context.Context, params domain.ListWorkspacesPa
 	}
 	defer rows.Close()
 
-	var workspaces []domain.Workspace
+	var workspaces []Workspace
 	for rows.Next() {
-		var w domain.Workspace
+		var w Workspace
 		if err := rows.Scan(&w.ID, &w.Name, &w.Slug, &w.CreatedAt, &w.UpdatedAt, &w.DeletedAt); err != nil {
 			return nil, fmt.Errorf("scan workspace: %w", err)
 		}
@@ -101,15 +99,15 @@ func (r *WorkspaceRepo) List(ctx context.Context, params domain.ListWorkspacesPa
 		workspaces = workspaces[:pageSize]
 	}
 
-	return &domain.WorkspaceList{
+	return &WorkspaceList{
 		Workspaces:    workspaces,
 		NextPageToken: nextPageToken,
 		TotalCount:    totalCount,
 	}, nil
 }
 
-func (r *WorkspaceRepo) Update(ctx context.Context, params domain.UpdateWorkspaceParams) (*domain.Workspace, error) {
-	var w domain.Workspace
+func (r *WorkspaceRepo) Update(ctx context.Context, params UpdateWorkspaceParams) (*Workspace, error) {
+	var w Workspace
 	err := r.pool.QueryRow(ctx,
 		`UPDATE workspaces SET name = $1, slug = $2, updated_at = NOW()
 		 WHERE id = $3 AND deleted_at IS NULL
@@ -118,7 +116,7 @@ func (r *WorkspaceRepo) Update(ctx context.Context, params domain.UpdateWorkspac
 	).Scan(&w.ID, &w.Name, &w.Slug, &w.CreatedAt, &w.UpdatedAt, &w.DeletedAt)
 	if err != nil {
 		if err == pgx.ErrNoRows {
-			return nil, domain.ErrNotFound
+			return nil, ErrNotFound
 		}
 		return nil, fmt.Errorf("update workspace: %w", err)
 	}
@@ -133,7 +131,7 @@ func (r *WorkspaceRepo) Delete(ctx context.Context, id uuid.UUID) error {
 		return fmt.Errorf("delete workspace: %w", err)
 	}
 	if tag.RowsAffected() == 0 {
-		return domain.ErrNotFound
+		return ErrNotFound
 	}
 	return nil
 }

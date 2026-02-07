@@ -7,32 +7,32 @@ import (
 
 	"github.com/google/uuid"
 
-	"github.com/igorrmotta/api-corestack/services/golang/internal/domain"
+	"github.com/igorrmotta/api-corestack/services/golang/internal/repository"
 )
 
 type TaskService struct {
-	repo      domain.TaskRepository
-	notifRepo domain.NotificationRepository
+	repo      *repository.TaskRepo
+	notifRepo *repository.NotificationRepo
 }
 
-func NewTaskService(repo domain.TaskRepository, notifRepo domain.NotificationRepository) *TaskService {
+func NewTaskService(repo *repository.TaskRepo, notifRepo *repository.NotificationRepo) *TaskService {
 	return &TaskService{repo: repo, notifRepo: notifRepo}
 }
 
-func (s *TaskService) Create(ctx context.Context, params domain.CreateTaskParams) (*domain.Task, error) {
+func (s *TaskService) Create(ctx context.Context, params repository.CreateTaskParams) (*repository.Task, error) {
 	if params.Title == "" {
-		return nil, fmt.Errorf("%w: title is required", domain.ErrInvalidInput)
+		return nil, fmt.Errorf("%w: title is required", repository.ErrInvalidInput)
 	}
 	if params.WorkspaceID == uuid.Nil {
-		return nil, fmt.Errorf("%w: workspace_id is required", domain.ErrInvalidInput)
+		return nil, fmt.Errorf("%w: workspace_id is required", repository.ErrInvalidInput)
 	}
 	if params.ProjectID == uuid.Nil {
-		return nil, fmt.Errorf("%w: project_id is required", domain.ErrInvalidInput)
+		return nil, fmt.Errorf("%w: project_id is required", repository.ErrInvalidInput)
 	}
 
 	validPriorities := map[string]bool{"low": true, "medium": true, "high": true, "critical": true, "": true}
 	if !validPriorities[params.Priority] {
-		return nil, fmt.Errorf("%w: invalid priority: %s", domain.ErrInvalidInput, params.Priority)
+		return nil, fmt.Errorf("%w: invalid priority: %s", repository.ErrInvalidInput, params.Priority)
 	}
 
 	slog.DebugContext(ctx, "creating task", "title", params.Title, "project_id", params.ProjectID)
@@ -43,7 +43,7 @@ func (s *TaskService) Create(ctx context.Context, params domain.CreateTaskParams
 
 	// Enqueue notification
 	if s.notifRepo != nil {
-		_, _ = s.notifRepo.Create(ctx, domain.CreateNotificationParams{
+		_, _ = s.notifRepo.Create(ctx, repository.CreateNotificationParams{
 			WorkspaceID: task.WorkspaceID,
 			EventType:   "task.created",
 			Payload:     []byte(fmt.Sprintf(`{"task_id":"%s","title":"%s"}`, task.ID, task.Title)),
@@ -53,26 +53,26 @@ func (s *TaskService) Create(ctx context.Context, params domain.CreateTaskParams
 	return task, nil
 }
 
-func (s *TaskService) GetByID(ctx context.Context, id uuid.UUID) (*domain.Task, error) {
+func (s *TaskService) GetByID(ctx context.Context, id uuid.UUID) (*repository.Task, error) {
 	return s.repo.GetByID(ctx, id)
 }
 
-func (s *TaskService) List(ctx context.Context, params domain.ListTasksParams) (*domain.TaskList, error) {
+func (s *TaskService) List(ctx context.Context, params repository.ListTasksParams) (*repository.TaskList, error) {
 	validStatuses := map[string]bool{"todo": true, "in_progress": true, "review": true, "done": true, "": true}
 	if !validStatuses[params.Status] {
-		return nil, fmt.Errorf("%w: invalid status filter: %s", domain.ErrInvalidInput, params.Status)
+		return nil, fmt.Errorf("%w: invalid status filter: %s", repository.ErrInvalidInput, params.Status)
 	}
 	return s.repo.List(ctx, params)
 }
 
-func (s *TaskService) Update(ctx context.Context, params domain.UpdateTaskParams) (*domain.Task, error) {
+func (s *TaskService) Update(ctx context.Context, params repository.UpdateTaskParams) (*repository.Task, error) {
 	if params.Title == "" {
-		return nil, fmt.Errorf("%w: title is required", domain.ErrInvalidInput)
+		return nil, fmt.Errorf("%w: title is required", repository.ErrInvalidInput)
 	}
 
 	validStatuses := map[string]bool{"todo": true, "in_progress": true, "review": true, "done": true, "": true}
 	if !validStatuses[params.Status] {
-		return nil, fmt.Errorf("%w: invalid status: %s", domain.ErrInvalidInput, params.Status)
+		return nil, fmt.Errorf("%w: invalid status: %s", repository.ErrInvalidInput, params.Status)
 	}
 
 	return s.repo.Update(ctx, params)

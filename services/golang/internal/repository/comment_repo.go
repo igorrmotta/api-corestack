@@ -7,8 +7,6 @@ import (
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
-
-	"github.com/igorrmotta/api-corestack/services/golang/internal/domain"
 )
 
 type CommentRepo struct {
@@ -19,8 +17,8 @@ func NewCommentRepo(pool *pgxpool.Pool) *CommentRepo {
 	return &CommentRepo{pool: pool}
 }
 
-func (r *CommentRepo) Create(ctx context.Context, params domain.CreateCommentParams) (*domain.Comment, error) {
-	var c domain.Comment
+func (r *CommentRepo) Create(ctx context.Context, params CreateCommentParams) (*Comment, error) {
+	var c Comment
 	err := r.pool.QueryRow(ctx,
 		`INSERT INTO task_comments (id, task_id, author_id, content, created_at, updated_at)
 		 VALUES (gen_random_uuid(), $1, $2, $3, NOW(), NOW())
@@ -33,7 +31,7 @@ func (r *CommentRepo) Create(ctx context.Context, params domain.CreateCommentPar
 	return &c, nil
 }
 
-func (r *CommentRepo) List(ctx context.Context, params domain.ListCommentsParams) (*domain.CommentList, error) {
+func (r *CommentRepo) List(ctx context.Context, params ListCommentsParams) (*CommentList, error) {
 	pageSize := params.PageSize
 	if pageSize <= 0 || pageSize > 100 {
 		pageSize = 20
@@ -73,9 +71,9 @@ func (r *CommentRepo) List(ctx context.Context, params domain.ListCommentsParams
 	}
 	defer rows.Close()
 
-	var comments []domain.Comment
+	var comments []Comment
 	for rows.Next() {
-		var c domain.Comment
+		var c Comment
 		if err := rows.Scan(&c.ID, &c.TaskID, &c.AuthorID, &c.Content, &c.CreatedAt, &c.UpdatedAt); err != nil {
 			return nil, fmt.Errorf("scan comment: %w", err)
 		}
@@ -88,7 +86,7 @@ func (r *CommentRepo) List(ctx context.Context, params domain.ListCommentsParams
 		comments = comments[:pageSize]
 	}
 
-	return &domain.CommentList{
+	return &CommentList{
 		Comments:      comments,
 		NextPageToken: nextPageToken,
 		TotalCount:    totalCount,
@@ -102,7 +100,7 @@ func (r *CommentRepo) Delete(ctx context.Context, id uuid.UUID) error {
 		return fmt.Errorf("delete comment: %w", err)
 	}
 	if tag.RowsAffected() == 0 {
-		return domain.ErrNotFound
+		return ErrNotFound
 	}
 	return nil
 }

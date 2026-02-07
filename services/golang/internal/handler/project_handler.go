@@ -10,7 +10,7 @@ import (
 	commonv1 "github.com/igorrmotta/api-corestack/services/golang/gen/common/v1"
 	projectv1 "github.com/igorrmotta/api-corestack/services/golang/gen/project/v1"
 	"github.com/igorrmotta/api-corestack/services/golang/gen/project/v1/projectv1connect"
-	"github.com/igorrmotta/api-corestack/services/golang/internal/domain"
+	"github.com/igorrmotta/api-corestack/services/golang/internal/repository"
 	"github.com/igorrmotta/api-corestack/services/golang/internal/service"
 )
 
@@ -28,7 +28,7 @@ func (h *ProjectHandler) CreateProject(ctx context.Context, req *connect.Request
 	if err != nil {
 		return nil, connect.NewError(connect.CodeInvalidArgument, err)
 	}
-	p, err := h.svc.Create(ctx, domain.CreateProjectParams{
+	p, err := h.svc.Create(ctx, repository.CreateProjectParams{
 		WorkspaceID: workspaceID,
 		Name:        req.Msg.Name,
 		Description: req.Msg.Description,
@@ -60,7 +60,7 @@ func (h *ProjectHandler) ListProjects(ctx context.Context, req *connect.Request[
 	if err != nil {
 		return nil, connect.NewError(connect.CodeInvalidArgument, err)
 	}
-	var params domain.ListProjectsParams
+	var params repository.ListProjectsParams
 	params.WorkspaceID = workspaceID
 	if req.Msg.Pagination != nil {
 		params.PageSize = req.Msg.Pagination.PageSize
@@ -88,7 +88,7 @@ func (h *ProjectHandler) UpdateProject(ctx context.Context, req *connect.Request
 	if err != nil {
 		return nil, connect.NewError(connect.CodeInvalidArgument, err)
 	}
-	p, err := h.svc.Update(ctx, domain.UpdateProjectParams{
+	p, err := h.svc.Update(ctx, repository.UpdateProjectParams{
 		ID:          id,
 		Name:        req.Msg.Name,
 		Description: req.Msg.Description,
@@ -113,7 +113,7 @@ func (h *ProjectHandler) DeleteProject(ctx context.Context, req *connect.Request
 	return connect.NewResponse(&projectv1.DeleteProjectResponse{}), nil
 }
 
-func projectToProto(p *domain.Project) *projectv1.Project {
+func projectToProto(p *repository.Project) *projectv1.Project {
 	return &projectv1.Project{
 		Id:          p.ID.String(),
 		WorkspaceId: p.WorkspaceID.String(),

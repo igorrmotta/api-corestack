@@ -7,8 +7,6 @@ import (
 
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
-
-	"github.com/igorrmotta/api-corestack/services/golang/internal/domain"
 )
 
 type NotificationRepo struct {
@@ -19,8 +17,8 @@ func NewNotificationRepo(pool *pgxpool.Pool) *NotificationRepo {
 	return &NotificationRepo{pool: pool}
 }
 
-func (r *NotificationRepo) Create(ctx context.Context, params domain.CreateNotificationParams) (*domain.Notification, error) {
-	var n domain.Notification
+func (r *NotificationRepo) Create(ctx context.Context, params CreateNotificationParams) (*Notification, error) {
+	var n Notification
 	err := r.pool.QueryRow(ctx,
 		`INSERT INTO notification_queue (workspace_id, event_type, payload, status, created_at)
 		 VALUES ($1, $2, $3, 'pending', NOW())
@@ -35,7 +33,7 @@ func (r *NotificationRepo) Create(ctx context.Context, params domain.CreateNotif
 	return &n, nil
 }
 
-func (r *NotificationRepo) List(ctx context.Context, params domain.ListNotificationsParams) (*domain.NotificationList, error) {
+func (r *NotificationRepo) List(ctx context.Context, params ListNotificationsParams) (*NotificationList, error) {
 	pageSize := params.PageSize
 	if pageSize <= 0 || pageSize > 100 {
 		pageSize = 20
@@ -101,9 +99,9 @@ func (r *NotificationRepo) List(ctx context.Context, params domain.ListNotificat
 	}
 	defer rows.Close()
 
-	var notifications []domain.Notification
+	var notifications []Notification
 	for rows.Next() {
-		var n domain.Notification
+		var n Notification
 		if err := rows.Scan(&n.ID, &n.WorkspaceID, &n.EventType, &n.Payload, &n.Status,
 			&n.RetryCount, &n.MaxRetries, &n.NextRetryAt, &n.LastError, &n.CreatedAt, &n.ProcessedAt); err != nil {
 			return nil, fmt.Errorf("scan notification: %w", err)
@@ -117,15 +115,15 @@ func (r *NotificationRepo) List(ctx context.Context, params domain.ListNotificat
 		nextPageToken = strconv.Itoa(nextOffset)
 	}
 
-	return &domain.NotificationList{
+	return &NotificationList{
 		Notifications: notifications,
 		NextPageToken: nextPageToken,
 		TotalCount:    totalCount,
 	}, nil
 }
 
-func (r *NotificationRepo) MarkProcessed(ctx context.Context, id int64) (*domain.Notification, error) {
-	var n domain.Notification
+func (r *NotificationRepo) MarkProcessed(ctx context.Context, id int64) (*Notification, error) {
+	var n Notification
 	err := r.pool.QueryRow(ctx,
 		`UPDATE notification_queue
 		 SET status = 'processed', processed_at = NOW()
@@ -137,14 +135,14 @@ func (r *NotificationRepo) MarkProcessed(ctx context.Context, id int64) (*domain
 		&n.MaxRetries, &n.NextRetryAt, &n.LastError, &n.CreatedAt, &n.ProcessedAt)
 	if err != nil {
 		if err == pgx.ErrNoRows {
-			return nil, domain.ErrNotFound
+			return nil, ErrNotFound
 		}
 		return nil, fmt.Errorf("mark notification processed: %w", err)
 	}
 	return &n, nil
 }
 
-func (r *NotificationRepo) FetchPending(ctx context.Context, limit int) ([]domain.Notification, error) {
+func (r *NotificationRepo) FetchPending(ctx context.Context, limit int) ([]Notification, error) {
 	rows, err := r.pool.Query(ctx,
 		`SELECT id, workspace_id, event_type, payload, status, retry_count, max_retries,
 		        next_retry_at, COALESCE(last_error, ''), created_at, processed_at
@@ -161,9 +159,9 @@ func (r *NotificationRepo) FetchPending(ctx context.Context, limit int) ([]domai
 	}
 	defer rows.Close()
 
-	var notifications []domain.Notification
+	var notifications []Notification
 	for rows.Next() {
-		var n domain.Notification
+		var n Notification
 		if err := rows.Scan(&n.ID, &n.WorkspaceID, &n.EventType, &n.Payload, &n.Status,
 			&n.RetryCount, &n.MaxRetries, &n.NextRetryAt, &n.LastError, &n.CreatedAt, &n.ProcessedAt); err != nil {
 			return nil, fmt.Errorf("scan notification: %w", err)
@@ -188,7 +186,7 @@ func (r *NotificationRepo) MarkFailed(ctx context.Context, id int64, errMsg stri
 		return fmt.Errorf("mark notification failed: %w", err)
 	}
 	if tag.RowsAffected() == 0 {
-		return domain.ErrNotFound
+		return ErrNotFound
 	}
 	return nil
 }

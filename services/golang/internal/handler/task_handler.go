@@ -12,7 +12,7 @@ import (
 	commonv1 "github.com/igorrmotta/api-corestack/services/golang/gen/common/v1"
 	taskv1 "github.com/igorrmotta/api-corestack/services/golang/gen/task/v1"
 	"github.com/igorrmotta/api-corestack/services/golang/gen/task/v1/taskv1connect"
-	"github.com/igorrmotta/api-corestack/services/golang/internal/domain"
+	"github.com/igorrmotta/api-corestack/services/golang/internal/repository"
 	"github.com/igorrmotta/api-corestack/services/golang/internal/service"
 )
 
@@ -36,7 +36,7 @@ func (h *TaskHandler) CreateTask(ctx context.Context, req *connect.Request[taskv
 		return nil, connect.NewError(connect.CodeInvalidArgument, err)
 	}
 
-	params := domain.CreateTaskParams{
+	params := repository.CreateTaskParams{
 		WorkspaceID: workspaceID,
 		ProjectID:   projectID,
 		Title:       req.Msg.Title,
@@ -93,7 +93,7 @@ func (h *TaskHandler) ListTasks(ctx context.Context, req *connect.Request[taskv1
 		return nil, connect.NewError(connect.CodeInvalidArgument, err)
 	}
 
-	params := domain.ListTasksParams{
+	params := repository.ListTasksParams{
 		WorkspaceID: workspaceID,
 		Status:      req.Msg.Status,
 		Priority:    req.Msg.Priority,
@@ -138,7 +138,7 @@ func (h *TaskHandler) UpdateTask(ctx context.Context, req *connect.Request[taskv
 		return nil, connect.NewError(connect.CodeInvalidArgument, err)
 	}
 
-	params := domain.UpdateTaskParams{
+	params := repository.UpdateTaskParams{
 		ID:          id,
 		Title:       req.Msg.Title,
 		Description: req.Msg.Description,
@@ -192,9 +192,9 @@ func (h *TaskHandler) BulkImportTasks(ctx context.Context, req *connect.Request[
 		return nil, connect.NewError(connect.CodeInvalidArgument, err)
 	}
 
-	inputs := make([]domain.TaskInput, len(req.Msg.Tasks))
+	inputs := make([]repository.TaskInput, len(req.Msg.Tasks))
 	for i, t := range req.Msg.Tasks {
-		input := domain.TaskInput{
+		input := repository.TaskInput{
 			Title:       t.Title,
 			Description: t.Description,
 			Priority:    t.Priority,
@@ -232,7 +232,7 @@ func (h *TaskHandler) BulkImportTasks(ctx context.Context, req *connect.Request[
 	}), nil
 }
 
-func taskToProto(t *domain.Task) (*taskv1.Task, error) {
+func taskToProto(t *repository.Task) (*taskv1.Task, error) {
 	proto := &taskv1.Task{
 		Id:          t.ID.String(),
 		WorkspaceId: t.WorkspaceID.String(),

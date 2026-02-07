@@ -1,7 +1,6 @@
-package domain
+package repository
 
 import (
-	"context"
 	"time"
 
 	"github.com/google/uuid"
@@ -36,12 +35,4 @@ type WorkspaceList struct {
 	Workspaces    []Workspace
 	NextPageToken string
 	TotalCount    int32
-}
-
-type WorkspaceRepository interface {
-	Create(ctx context.Context, params CreateWorkspaceParams) (*Workspace, error)
-	GetByID(ctx context.Context, id uuid.UUID) (*Workspace, error)
-	List(ctx context.Context, params ListWorkspacesParams) (*WorkspaceList, error)
-	Update(ctx context.Context, params UpdateWorkspaceParams) (*Workspace, error)
-	Delete(ctx context.Context, id uuid.UUID) error
 }

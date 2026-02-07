@@ -7,8 +7,6 @@ import (
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
-
-	"github.com/igorrmotta/api-corestack/services/golang/internal/domain"
 )
 
 type ProjectRepo struct {
@@ -19,8 +17,8 @@ func NewProjectRepo(pool *pgxpool.Pool) *ProjectRepo {
 	return &ProjectRepo{pool: pool}
 }
 
-func (r *ProjectRepo) Create(ctx context.Context, params domain.CreateProjectParams) (*domain.Project, error) {
-	var p domain.Project
+func (r *ProjectRepo) Create(ctx context.Context, params CreateProjectParams) (*Project, error) {
+	var p Project
 	err := r.pool.QueryRow(ctx,
 		`INSERT INTO projects (id, workspace_id, name, description, status, created_at, updated_at)
 		 VALUES (gen_random_uuid(), $1, $2, $3, 'active', NOW(), NOW())
@@ -33,8 +31,8 @@ func (r *ProjectRepo) Create(ctx context.Context, params domain.CreateProjectPar
 	return &p, nil
 }
 
-func (r *ProjectRepo) GetByID(ctx context.Context, id uuid.UUID) (*domain.Project, error) {
-	var p domain.Project
+func (r *ProjectRepo) GetByID(ctx context.Context, id uuid.UUID) (*Project, error) {
+	var p Project
 	err := r.pool.QueryRow(ctx,
 		`SELECT id, workspace_id, name, description, status, created_at, updated_at, deleted_at
 		 FROM projects WHERE id = $1 AND deleted_at IS NULL`,
@@ -42,14 +40,14 @@ func (r *ProjectRepo) GetByID(ctx context.Context, id uuid.UUID) (*domain.Projec
 	).Scan(&p.ID, &p.WorkspaceID, &p.Name, &p.Description, &p.Status, &p.CreatedAt, &p.UpdatedAt, &p.DeletedAt)
 	if err != nil {
 		if err == pgx.ErrNoRows {
-			return nil, domain.ErrNotFound
+			return nil, ErrNotFound
 		}
 		return nil, fmt.Errorf("get project: %w", err)
 	}
 	return &p, nil
 }
 
-func (r *ProjectRepo) List(ctx context.Context, params domain.ListProjectsParams) (*domain.ProjectList, error) {
+func (r *ProjectRepo) List(ctx context.Context, params ListProjectsParams) (*ProjectList, error) {
 	pageSize := params.PageSize
 	if pageSize <= 0 || pageSize > 100 {
 		pageSize = 20
@@ -89,9 +87,9 @@ func (r *ProjectRepo) List(ctx context.Context, params domain.ListProjectsParams
 	}
 	defer rows.Close()
 
-	var projects []domain.Project
+	var projects []Project
 	for rows.Next() {
-		var p domain.Project
+		var p Project
 		if err := rows.Scan(&p.ID, &p.WorkspaceID, &p.Name, &p.Description, &p.Status, &p.CreatedAt, &p.UpdatedAt, &p.DeletedAt); err != nil {
 			return nil, fmt.Errorf("scan project: %w", err)
 		}
@@ -104,15 +102,15 @@ func (r *ProjectRepo) List(ctx context.Context, params domain.ListProjectsParams
 		projects = projects[:pageSize]
 	}
 
-	return &domain.ProjectList{
+	return &ProjectList{
 		Projects:      projects,
 		NextPageToken: nextPageToken,
 		TotalCount:    totalCount,
 	}, nil
 }
 
-func (r *ProjectRepo) Update(ctx context.Context, params domain.UpdateProjectParams) (*domain.Project, error) {
-	var p domain.Project
+func (r *ProjectRepo) Update(ctx context.Context, params UpdateProjectParams) (*Project, error) {
+	var p Project
 	err := r.pool.QueryRow(ctx,
 		`UPDATE projects SET name = $1, description = $2, status = $3, updated_at = NOW()
 		 WHERE id = $4 AND deleted_at IS NULL
@@ -121,7 +119,7 @@ func (r *ProjectRepo) Update(ctx context.Context, params domain.UpdateProjectPar
 	).Scan(&p.ID, &p.WorkspaceID, &p.Name, &p.Description, &p.Status, &p.CreatedAt, &p.UpdatedAt, &p.DeletedAt)
 	if err != nil {
 		if err == pgx.ErrNoRows {
-			return nil, domain.ErrNotFound
+			return nil, ErrNotFound
 		}
 		return nil, fmt.Errorf("update project: %w", err)
 	}
@@ -136,7 +134,7 @@ func (r *ProjectRepo) Delete(ctx context.Context, id uuid.UUID) error {
 		return fmt.Errorf("delete project: %w", err)
 	}
 	if tag.RowsAffected() == 0 {
-		return domain.ErrNotFound
+		return ErrNotFound
 	}
 	return nil
 }

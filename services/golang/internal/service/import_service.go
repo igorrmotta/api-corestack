@@ -10,17 +10,17 @@ import (
 	"golang.org/x/sync/errgroup"
 	"golang.org/x/time/rate"
 
-	"github.com/igorrmotta/api-corestack/services/golang/internal/domain"
+	"github.com/igorrmotta/api-corestack/services/golang/internal/repository"
 )
 
 type ImportService struct {
-	taskRepo    domain.TaskRepository
-	notifRepo   domain.NotificationRepository
+	taskRepo    *repository.TaskRepo
+	notifRepo   *repository.NotificationRepo
 	concurrency int
 	rateLimit   rate.Limit
 }
 
-func NewImportService(taskRepo domain.TaskRepository, notifRepo domain.NotificationRepository, concurrency int, rateLimit float64) *ImportService {
+func NewImportService(taskRepo *repository.TaskRepo, notifRepo *repository.NotificationRepo, concurrency int, rateLimit float64) *ImportService {
 	if concurrency <= 0 {
 		concurrency = 10
 	}
@@ -35,8 +35,8 @@ func NewImportService(taskRepo domain.TaskRepository, notifRepo domain.Notificat
 	}
 }
 
-func (s *ImportService) BulkImport(ctx context.Context, workspaceID, projectID uuid.UUID, inputs []domain.TaskInput) *domain.ImportResult {
-	result := &domain.ImportResult{
+func (s *ImportService) BulkImport(ctx context.Context, workspaceID, projectID uuid.UUID, inputs []repository.TaskInput) *repository.ImportResult {
+	result := &repository.ImportResult{
 		Total: int32(len(inputs)),
 	}
 
@@ -63,7 +63,7 @@ func (s *ImportService) BulkImport(ctx context.Context, workspaceID, projectID u
 			if err := limiter.Wait(ctx); err != nil {
 				mu.Lock()
 				result.Failed++
-				result.Errors = append(result.Errors, domain.ImportError{
+				result.Errors = append(result.Errors, repository.ImportError{
 					Index: int32(i),
 					Error: fmt.Sprintf("rate limit: %v", err),
 				})
@@ -71,7 +71,7 @@ func (s *ImportService) BulkImport(ctx context.Context, workspaceID, projectID u
 				return nil // don't cancel other goroutines
 			}
 
-			task, err := s.taskRepo.Create(ctx, domain.CreateTaskParams{
+			task, err := s.taskRepo.Create(ctx, repository.CreateTaskParams{
 				WorkspaceID: workspaceID,
 				ProjectID:   projectID,
 				Title:       input.Title,
@@ -84,7 +84,7 @@ func (s *ImportService) BulkImport(ctx context.Context, workspaceID, projectID u
 			if err != nil {
 				mu.Lock()
 				result.Failed++
-				result.Errors = append(result.Errors, domain.ImportError{
+				result.Errors = append(result.Errors, repository.ImportError{
 					Index: int32(i),
 					Error: err.Error(),
 				})
@@ -94,7 +94,7 @@ func (s *ImportService) BulkImport(ctx context.Context, workspaceID, projectID u
 
 			// Enqueue notification for each imported task
 			if s.notifRepo != nil {
-				_, _ = s.notifRepo.Create(ctx, domain.CreateNotificationParams{
+				_, _ = s.notifRepo.Create(ctx, repository.CreateNotificationParams{
 					WorkspaceID: workspaceID,
 					EventType:   "task.imported",
 					Payload:     []byte(fmt.Sprintf(`{"task_id":"%s","title":"%s"}`, task.ID, task.Title)),

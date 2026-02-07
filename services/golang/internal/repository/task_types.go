@@ -1,7 +1,6 @@
-package domain
+package repository
 
 import (
-	"context"
 	"encoding/json"
 	"time"
 
@@ -81,12 +80,4 @@ type ImportResult struct {
 type ImportError struct {
 	Index int32
 	Error string
-}
-
-type TaskRepository interface {
-	Create(ctx context.Context, params CreateTaskParams) (*Task, error)
-	GetByID(ctx context.Context, id uuid.UUID) (*Task, error)
-	List(ctx context.Context, params ListTasksParams) (*TaskList, error)
-	Update(ctx context.Context, params UpdateTaskParams) (*Task, error)
-	Delete(ctx context.Context, id uuid.UUID) error
 }

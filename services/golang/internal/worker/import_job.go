@@ -9,7 +9,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/riverqueue/river"
 
-	"github.com/igorrmotta/api-corestack/services/golang/internal/domain"
+	"github.com/igorrmotta/api-corestack/services/golang/internal/repository"
 )
 
 // ImportJobArgs represents the args for a bulk import job.
@@ -32,11 +32,11 @@ type ImportTaskInput struct {
 // ImportWorker processes bulk import jobs asynchronously.
 type ImportWorker struct {
 	river.WorkerDefaults[ImportJobArgs]
-	taskRepo  domain.TaskRepository
-	notifRepo domain.NotificationRepository
+	taskRepo  *repository.TaskRepo
+	notifRepo *repository.NotificationRepo
 }
 
-func NewImportWorker(taskRepo domain.TaskRepository, notifRepo domain.NotificationRepository) *ImportWorker {
+func NewImportWorker(taskRepo *repository.TaskRepo, notifRepo *repository.NotificationRepo) *ImportWorker {
 	return &ImportWorker{
 		taskRepo:  taskRepo,
 		notifRepo: notifRepo,
@@ -61,7 +61,7 @@ func (w *ImportWorker) Work(ctx context.Context, job *river.Job[ImportJobArgs]) 
 
 	var succeeded, failed int
 	for i, input := range job.Args.Tasks {
-		task, createErr := w.taskRepo.Create(ctx, domain.CreateTaskParams{
+		task, createErr := w.taskRepo.Create(ctx, repository.CreateTaskParams{
 			WorkspaceID: workspaceID,
 			ProjectID:   projectID,
 			Title:       input.Title,
@@ -83,7 +83,7 @@ func (w *ImportWorker) Work(ctx context.Context, job *river.Job[ImportJobArgs]) 
 
 		// Enqueue notification for imported task
 		if w.notifRepo != nil {
-			_, _ = w.notifRepo.Create(ctx, domain.CreateNotificationParams{
+			_, _ = w.notifRepo.Create(ctx, repository.CreateNotificationParams{
 				WorkspaceID: workspaceID,
 				EventType:   "task.imported",
 				Payload:     []byte(fmt.Sprintf(`{"task_id":"%s","title":"%s"}`, task.ID, task.Title)),

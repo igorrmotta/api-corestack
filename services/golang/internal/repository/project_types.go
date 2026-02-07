@@ -1,7 +1,6 @@
-package domain
+package repository
 
 import (
-	"context"
 	"time"
 
 	"github.com/google/uuid"
@@ -41,12 +40,4 @@ type ProjectList struct {
 	Projects      []Project
 	NextPageToken string
 	TotalCount    int32
-}
-
-type ProjectRepository interface {
-	Create(ctx context.Context, params CreateProjectParams) (*Project, error)
-	GetByID(ctx context.Context, id uuid.UUID) (*Project, error)
-	List(ctx context.Context, params ListProjectsParams) (*ProjectList, error)
-	Update(ctx context.Context, params UpdateProjectParams) (*Project, error)
-	Delete(ctx context.Context, id uuid.UUID) error
 }

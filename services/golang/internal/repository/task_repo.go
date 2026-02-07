@@ -8,8 +8,6 @@ import (
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
-
-	"github.com/igorrmotta/api-corestack/services/golang/internal/domain"
 )
 
 type TaskRepo struct {
@@ -20,8 +18,8 @@ func NewTaskRepo(pool *pgxpool.Pool) *TaskRepo {
 	return &TaskRepo{pool: pool}
 }
 
-func (r *TaskRepo) Create(ctx context.Context, params domain.CreateTaskParams) (*domain.Task, error) {
-	var t domain.Task
+func (r *TaskRepo) Create(ctx context.Context, params CreateTaskParams) (*Task, error) {
+	var t Task
 	var assignedTo *string
 	if params.AssignedTo != "" {
 		assignedTo = &params.AssignedTo
@@ -49,8 +47,8 @@ func (r *TaskRepo) Create(ctx context.Context, params domain.CreateTaskParams) (
 	return &t, nil
 }
 
-func (r *TaskRepo) GetByID(ctx context.Context, id uuid.UUID) (*domain.Task, error) {
-	var t domain.Task
+func (r *TaskRepo) GetByID(ctx context.Context, id uuid.UUID) (*Task, error) {
+	var t Task
 	err := r.pool.QueryRow(ctx,
 		`SELECT id, workspace_id, project_id, title, description, status, priority,
 		        COALESCE(assigned_to, ''), due_date, metadata, created_at, updated_at, deleted_at
@@ -60,14 +58,14 @@ func (r *TaskRepo) GetByID(ctx context.Context, id uuid.UUID) (*domain.Task, err
 		&t.AssignedTo, &t.DueDate, &t.Metadata, &t.CreatedAt, &t.UpdatedAt, &t.DeletedAt)
 	if err != nil {
 		if err == pgx.ErrNoRows {
-			return nil, domain.ErrNotFound
+			return nil, ErrNotFound
 		}
 		return nil, fmt.Errorf("get task: %w", err)
 	}
 	return &t, nil
 }
 
-func (r *TaskRepo) List(ctx context.Context, params domain.ListTasksParams) (*domain.TaskList, error) {
+func (r *TaskRepo) List(ctx context.Context, params ListTasksParams) (*TaskList, error) {
 	pageSize := params.PageSize
 	if pageSize <= 0 || pageSize > 100 {
 		pageSize = 20
@@ -140,9 +138,9 @@ func (r *TaskRepo) List(ctx context.Context, params domain.ListTasksParams) (*do
 	}
 	defer rows.Close()
 
-	var tasks []domain.Task
+	var tasks []Task
 	for rows.Next() {
-		var t domain.Task
+		var t Task
 		if err := rows.Scan(&t.ID, &t.WorkspaceID, &t.ProjectID, &t.Title, &t.Description,
 			&t.Status, &t.Priority, &t.AssignedTo, &t.DueDate, &t.Metadata,
 			&t.CreatedAt, &t.UpdatedAt, &t.DeletedAt); err != nil {
@@ -157,15 +155,15 @@ func (r *TaskRepo) List(ctx context.Context, params domain.ListTasksParams) (*do
 		tasks = tasks[:pageSize]
 	}
 
-	return &domain.TaskList{
+	return &TaskList{
 		Tasks:         tasks,
 		NextPageToken: nextPageToken,
 		TotalCount:    totalCount,
 	}, nil
 }
 
-func (r *TaskRepo) Update(ctx context.Context, params domain.UpdateTaskParams) (*domain.Task, error) {
-	var t domain.Task
+func (r *TaskRepo) Update(ctx context.Context, params UpdateTaskParams) (*Task, error) {
+	var t Task
 	var assignedTo *string
 	if params.AssignedTo != "" {
 		assignedTo = &params.AssignedTo
@@ -187,7 +185,7 @@ func (r *TaskRepo) Update(ctx context.Context, params domain.UpdateTaskParams) (
 		&t.AssignedTo, &t.DueDate, &t.Metadata, &t.CreatedAt, &t.UpdatedAt, &t.DeletedAt)
 	if err != nil {
 		if err == pgx.ErrNoRows {
-			return nil, domain.ErrNotFound
+			return nil, ErrNotFound
 		}
 		return nil, fmt.Errorf("update task: %w", err)
 	}
@@ -202,7 +200,7 @@ func (r *TaskRepo) Delete(ctx context.Context, id uuid.UUID) error {
 		return fmt.Errorf("delete task: %w", err)
 	}
 	if tag.RowsAffected() == 0 {
-		return domain.ErrNotFound
+		return ErrNotFound
 	}
 	return nil
 }
