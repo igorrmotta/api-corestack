@@ -15,8 +15,8 @@ Go is the reference implementation. TypeScript is the second complete implementa
           ┌────────────────────┼────────────────────┐
           ▼                    ▼                     ▼
    ┌─────────────┐     ┌─────────────┐      ┌─────────────┐
-   │  Go :8080   │     │  TS :8081   │      │ Rust :8082  │
-   │  (complete) │     │ (complete)  │      │  (planned)  │
+   │  Go :8080   │     │  TS :8081   │      │  KT :8083   │
+   │  (complete) │     │ (complete)  │      │ (complete)  │
    └──────┬──────┘     └──────┬──────┘      └──────┬──────┘
           │                   │                     │
           └───────────────────┼─────────────────────┘
@@ -41,7 +41,8 @@ api-corestack/
 ├── db/migrations/          # dbmate SQL migrations
 ├── services/
 │   ├── golang/             # Go reference implementation
-│   └── typescript/         # TypeScript implementation
+│   ├── typescript/         # TypeScript implementation
+│   └── kotlin/             # Kotlin implementation
 ├── tests/bruno/            # Bruno API test collections
 ├── docker-compose.yml
 ├── Makefile
@@ -55,6 +56,7 @@ api-corestack/
 - [Docker](https://www.docker.com/) and Docker Compose
 - [Go 1.24+](https://go.dev/) (for Go implementation)
 - [Node.js 22+](https://nodejs.org/) and [pnpm](https://pnpm.io/) (for TypeScript implementation)
+- [JDK 21+](https://adoptium.net/) (for Kotlin implementation)
 - [Buf CLI](https://buf.build/docs/installation) (for protobuf generation)
 - [Bruno](https://www.usebruno.com/) (optional, for API testing)
 
@@ -66,6 +68,9 @@ make docker-go
 
 # TypeScript implementation
 make docker-ts
+
+# Kotlin implementation
+make docker-kt
 ```
 
 The API is available at `http://localhost:8080`.
@@ -111,6 +116,28 @@ make ts-server
 make ts-worker
 ```
 
+### Run Locally (Kotlin)
+
+```bash
+# 1. Start PostgreSQL
+make db-up
+
+# 2. Run migrations
+make db-migrate
+
+# 3. Generate protobuf code
+make proto-gen
+
+# 4. Build the Kotlin service
+make kt-build
+
+# 5. Start the Kotlin server
+make kt-server
+
+# 6. (In another terminal) Start the background worker
+make kt-worker
+```
+
 ### Run API Tests
 
 ```bash
@@ -119,6 +146,9 @@ make test-bruno
 
 # Against TypeScript server
 make test-bruno-ts
+
+# Against Kotlin server
+make test-bruno-kt
 ```
 
 ## Technology Decisions
@@ -140,7 +170,7 @@ make test-bruno-ts
 | Go | Complete | 8080 |
 | TypeScript | Complete | 8081 |
 | Rust | Planned | 8082 |
-| Kotlin | Planned | 8083 |
+| Kotlin | Complete | 8083 |
 | C# | Planned | 8084 |
 | Python | Planned | 8085 |
 
@@ -151,3 +181,4 @@ make test-bruno-ts
 - [`services/`](services/README.md) — Service implementations overview
 - [`services/golang/`](services/golang/README.md) — Go reference implementation
 - [`services/typescript/`](services/typescript/README.md) — TypeScript implementation
+- [`services/kotlin/`](services/kotlin/README.md) — Kotlin implementation

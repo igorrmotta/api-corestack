@@ -2,7 +2,9 @@
        proto-gen proto-lint proto-breaking \
        go-server go-worker go-test \
        ts-install ts-server ts-worker ts-test \
-       test-bruno test-bruno-ts docker-go docker-ts
+       kt-build kt-server kt-worker \
+       test-bruno test-bruno-ts test-bruno-kt \
+       docker-go docker-ts docker-kt
 
 # ── Database ──────────────────────────────────────────────
 
@@ -68,6 +70,22 @@ ts-test:
 test-bruno-ts:
 	npx @usebruno/cli run tests/bruno --env ts-dev
 
+# ── Kotlin ──────────────────────────────────────────────
+
+kt-build:
+	cd services/kotlin && ./gradlew shadowJar
+
+kt-server:
+	cd services/kotlin && ./gradlew run
+
+kt-worker:
+	cd services/kotlin && java -jar build/libs/app.jar worker
+
+# ── Integration Tests ────────────────────────────────────
+
+test-bruno-kt:
+	npx @usebruno/cli run tests/bruno --env kt-dev
+
 # ── Docker ───────────────────────────────────────────────
 
 docker-go:
@@ -75,3 +93,6 @@ docker-go:
 
 docker-ts:
 	docker compose --profile typescript up --build
+
+docker-kt:
+	docker compose --profile kotlin up --build

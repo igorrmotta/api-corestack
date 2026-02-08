@@ -41,6 +41,6 @@ PostgreSQL
 | Go | [`golang/`](golang/README.md) | 8080 | Complete |
 | TypeScript | [`typescript/`](typescript/README.md) | 8081 | Complete |
 | Rust | `rust/` | 8082 | Planned |
-| Kotlin | `kotlin/` | 8083 | Planned |
+| Kotlin | [`kotlin/`](kotlin/README.md) | 8083 | Complete |
 | C# | `csharp/` | 8084 | Planned |
 | Python | `python/` | 8085 | Planned |

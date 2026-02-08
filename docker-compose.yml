@@ -80,5 +80,33 @@ services:
       WORKER_CONCURRENCY: "10"
     profiles: [typescript]
 
+  kt-server:
+    build:
+      context: ./services/kotlin
+      dockerfile: Dockerfile
+    depends_on:
+      postgres:
+        condition: service_healthy
+    ports: ["8083:8083"]
+    environment:
+      DATABASE_URL: postgres://postgres:postgres@postgres:5432/api_corestack?sslmode=disable
+      GRPC_PORT: "8083"
+      LOG_LEVEL: info
+    profiles: [kotlin]
+
+  kt-worker:
+    build:
+      context: ./services/kotlin
+      dockerfile: Dockerfile
+    command: ["java", "-jar", "/app/app.jar", "worker"]
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgres://postgres:postgres@postgres:5432/api_corestack?sslmode=disable
+      LOG_LEVEL: info
+      WORKER_CONCURRENCY: "10"
+    profiles: [kotlin]
+
 volumes:
   postgres_data:

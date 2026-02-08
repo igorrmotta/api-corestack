@@ -12,3 +12,7 @@ plugins:
   - remote: buf.build/connectrpc/es
     out: ../services/typescript/gen
     opt: target=ts
+  - remote: buf.build/protocolbuffers/java
+    out: ../services/kotlin/gen
+  - remote: buf.build/protocolbuffers/kotlin
+    out: ../services/kotlin/gen
