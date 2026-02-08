@@ -39,7 +39,7 @@ PostgreSQL
 | Language | Directory | Port | Status |
 |---|---|---|---|
 | Go | [`golang/`](golang/README.md) | 8080 | Complete |
-| TypeScript | `typescript/` | 8081 | Planned |
+| TypeScript | [`typescript/`](typescript/README.md) | 8081 | Complete |
 | Rust | `rust/` | 8082 | Planned |
 | Kotlin | `kotlin/` | 8083 | Planned |
 | C# | `csharp/` | 8084 | Planned |

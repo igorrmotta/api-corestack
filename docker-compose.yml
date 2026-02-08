@@ -52,5 +52,33 @@ services:
       RIVER_CONCURRENCY: "10"
     profiles: [go]
 
+  ts-server:
+    build:
+      context: ./services/typescript
+      dockerfile: Dockerfile
+    depends_on:
+      postgres:
+        condition: service_healthy
+    ports: ["8080:8080"]
+    environment:
+      DATABASE_URL: postgres://postgres:postgres@postgres:5432/api_corestack?sslmode=disable
+      GRPC_PORT: "8080"
+      LOG_LEVEL: info
+    profiles: [typescript]
+
+  ts-worker:
+    build:
+      context: ./services/typescript
+      dockerfile: Dockerfile
+    command: ["node", "dist/worker.js"]
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgres://postgres:postgres@postgres:5432/api_corestack?sslmode=disable
+      LOG_LEVEL: info
+      WORKER_CONCURRENCY: "10"
+    profiles: [typescript]
+
 volumes:
   postgres_data:

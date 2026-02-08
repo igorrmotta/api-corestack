@@ -1,7 +1,8 @@
 .PHONY: db-up db-down db-migrate db-rollback db-new \
        proto-gen proto-lint proto-breaking \
        go-server go-worker go-test \
-       test-bruno docker-go
+       ts-install ts-server ts-worker ts-test \
+       test-bruno test-bruno-ts docker-go docker-ts
 
 # ── Database ──────────────────────────────────────────────
 
@@ -48,7 +49,29 @@ go-test:
 test-bruno:
 	npx @usebruno/cli run tests/bruno --env go-dev
 
+# ── TypeScript ───────────────────────────────────────────
+
+ts-install:
+	cd services/typescript && pnpm install
+
+ts-server:
+	cd services/typescript && pnpm dev:server
+
+ts-worker:
+	cd services/typescript && pnpm dev:worker
+
+ts-test:
+	cd services/typescript && pnpm test
+
+# ── Integration Tests ────────────────────────────────────
+
+test-bruno-ts:
+	npx @usebruno/cli run tests/bruno --env ts-dev
+
 # ── Docker ───────────────────────────────────────────────
 
 docker-go:
 	docker compose --profile go up --build
+
+docker-ts:
+	docker compose --profile typescript up --build

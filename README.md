@@ -2,7 +2,7 @@
 
 A polyglot Task Management API built as a learning project to explore how the same API spec can be implemented across multiple programming languages — all sharing one PostgreSQL database, protobuf contract, and test suite.
 
-Go is the reference implementation (complete). Other languages are planned.
+Go is the reference implementation. TypeScript is the second complete implementation. Other languages are planned.
 
 ## Architecture
 
@@ -16,7 +16,7 @@ Go is the reference implementation (complete). Other languages are planned.
           ▼                    ▼                     ▼
    ┌─────────────┐     ┌─────────────┐      ┌─────────────┐
    │  Go :8080   │     │  TS :8081   │      │ Rust :8082  │
-   │  (complete) │     │  (planned)  │      │  (planned)  │
+   │  (complete) │     │ (complete)  │      │  (planned)  │
    └──────┬──────┘     └──────┬──────┘      └──────┬──────┘
           │                   │                     │
           └───────────────────┼─────────────────────┘
@@ -40,7 +40,8 @@ api-corestack/
 ├── api/                    # Protobuf definitions (Buf v2 workspace)
 ├── db/migrations/          # dbmate SQL migrations
 ├── services/
-│   └── golang/             # Go reference implementation
+│   ├── golang/             # Go reference implementation
+│   └── typescript/         # TypeScript implementation
 ├── tests/bruno/            # Bruno API test collections
 ├── docker-compose.yml
 ├── Makefile
@@ -52,20 +53,24 @@ api-corestack/
 ### Prerequisites
 
 - [Docker](https://www.docker.com/) and Docker Compose
-- [Go 1.24+](https://go.dev/) (for local development)
+- [Go 1.24+](https://go.dev/) (for Go implementation)
+- [Node.js 22+](https://nodejs.org/) and [pnpm](https://pnpm.io/) (for TypeScript implementation)
 - [Buf CLI](https://buf.build/docs/installation) (for protobuf generation)
 - [Bruno](https://www.usebruno.com/) (optional, for API testing)
 
 ### Run with Docker (easiest)
 
 ```bash
-# Start everything: PostgreSQL, migrations, Go server + worker
+# Go implementation
 make docker-go
+
+# TypeScript implementation
+make docker-ts
 ```
 
 The API is available at `http://localhost:8080`.
 
-### Run Locally
+### Run Locally (Go)
 
 ```bash
 # 1. Start PostgreSQL
@@ -84,10 +89,36 @@ make go-server
 make go-worker
 ```
 
+### Run Locally (TypeScript)
+
+```bash
+# 1. Start PostgreSQL
+make db-up
+
+# 2. Run migrations
+make db-migrate
+
+# 3. Generate protobuf code
+make proto-gen
+
+# 4. Install dependencies
+make ts-install
+
+# 5. Start the TypeScript server
+make ts-server
+
+# 6. (In another terminal) Start the background worker
+make ts-worker
+```
+
 ### Run API Tests
 
 ```bash
+# Against Go server
 make test-bruno
+
+# Against TypeScript server
+make test-bruno-ts
 ```
 
 ## Technology Decisions
@@ -98,7 +129,8 @@ make test-bruno
 | Schema | [Protobuf](https://protobuf.dev/) + [Buf](https://buf.build/) | Language-neutral contract, lint, breaking change detection |
 | Database | PostgreSQL 16 | JSONB, pg_notify, partial indexes, CHECK constraints |
 | Migrations | [dbmate](https://github.com/amacneil/dbmate) | Language-agnostic, plain SQL |
-| Background Jobs | [River](https://riverqueue.com/) | Transactional enqueue in the same DB |
+| Background Jobs (Go) | [River](https://riverqueue.com/) | Transactional enqueue in the same DB |
+| Background Jobs (TS) | [graphile-worker](https://worker.graphile.org/) | PostgreSQL-based, no Redis dependency |
 | API Tests | [Bruno](https://www.usebruno.com/) | Git-friendly, language-agnostic collections |
 
 ## Implementation Status
@@ -106,7 +138,7 @@ make test-bruno
 | Language | Status | Port |
 |---|---|---|
 | Go | Complete | 8080 |
-| TypeScript | Planned | 8081 |
+| TypeScript | Complete | 8081 |
 | Rust | Planned | 8082 |
 | Kotlin | Planned | 8083 |
 | C# | Planned | 8084 |
@@ -118,3 +150,4 @@ make test-bruno
 - [`db/`](db/README.md) — Database schema and migrations
 - [`services/`](services/README.md) — Service implementations overview
 - [`services/golang/`](services/golang/README.md) — Go reference implementation
+- [`services/typescript/`](services/typescript/README.md) — TypeScript implementation
